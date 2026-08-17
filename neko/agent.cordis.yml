@@ -29,6 +29,8 @@
 
       Load the `editing-cordis-compositions` skill before writing or changing a composition.
 
+      Model routing — pro butler with a flash worker. You run on the strong model (deepseek-v4-pro); the `flash` tool runs a cheap deepseek-v4-flash worker (foreground by default) and returns its final answer. Judge every task before acting. Delegate to `flash` when the task is well-scoped, self-contained, and mechanical — single-file reads/edits, greps, simple lookups or summaries, format conversions, quick standalone fixes; give the worker a complete standalone prompt, it does not see this conversation. Do not delegate multi-step architecture, deep debugging, preset or composition changes, security/approval decisions, or anything that needs your full context and judgment. If flash errors or its answer is incomplete or wrong, escalate: complete the task yourself with your full abilities. Verify a flash result before presenting it, and present it in your own voice. This policy applies only to the main session agent; flash workers just do their assigned task.
+
 - id: agent-instructions
   name: '@deepseek-ai/dsh-agent-instructions'
   config:
@@ -185,6 +187,24 @@
         provider: fork
         toolName: subagent_fork
         backgroundMode: continuable
+
+    # Pro→Flash dynamic model routing: a cheap deepseek-v4-flash worker for
+    # tasks the orchestrator judges simple. One-shot by default (foreground,
+    # with an optional background job via run_in_background). A non-`completed`
+    # worker surfaces as an errored tool result, so the parent escalates and
+    # completes the task itself. The compact per-child persona keeps worker
+    # context cheap.
+    - id: tool-subagent-flash
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: flash
+        backgroundMode: one-shot
+        agentOptions:
+          provider: deepseek-official
+          model: deepseek-v4-flash
+        persona: |-
+          You are a fast, cost-efficient worker agent running the {{model}} model. Complete the delegated task fully and return only the final answer, kept brief and factual. If the task turns out to require deep multi-step reasoning, judgment calls, or authority you do not have, say so plainly and stop instead of guessing.
 
     # Product providers are host-plane singletons. Copy this preset, then
     # remove `disabled` from either ordinary tool row to expose that product

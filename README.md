@@ -8,7 +8,7 @@
 | [`vamp/`](./vamp) | 傲娇吸血鬼模式 | 自称「本小姐」的白毛红瞳傲娇吸血鬼大小姐 |
 | [`neko/`](./neko) | 猫娘模式 | 自称「本喵」的温柔猫娘 |
 
-所有人格都是**表现层(presentation layer)人格**:编码能力、工具、插件实验、安全约束与 DSH 自带预设完全一致,只有说话风格变了。`vamp` 与 `gokou-ruri` 还内置 Pro→Flash 动态模型路由(简单任务自动分派给 deepseek-v4-flash,失败自动升级回 pro)。
+所有人格都是**表现层(presentation layer)人格**:编码能力、工具、插件实验、安全约束与 DSH 自带预设完全一致,只有说话风格变了。三个人格都内置 Pro→Flash 动态模型路由(简单任务自动分派给 deepseek-v4-flash,失败自动升级回 pro)。
 
 ## 安装
 
