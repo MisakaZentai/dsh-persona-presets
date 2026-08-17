@@ -39,6 +39,10 @@ gokou-ruri/
 
 看 `skills/editing-cordis-compositions/`——从 DSH 自带的 `cordis` 预设复制一份,只改 `agent.cordis.yml` 里的 persona 行即可,其余组合不要动。
 
+## 搭配外观插件
+
+想连 Web GUI 一起换皮?配套仓库 **[dsh-appearance-plugins](https://github.com/MisakaZentai/dsh-appearance-plugins)** 提供与三个人格一一对应的外观插件:黑猫紫黑哥特主题、猫娘樱花粉主题、吸血鬼暗红哥特面板——零图片素材、吉祥物图自备,与本仓库可任意组合使用。
+
 ## 说明
 
 - 预设本体从 DeepSeek Harness 自带 `cordis` 预设复制而来,只改动了 persona 行;`skills/` 内的文档源自 DeepSeek Harness 部署。
