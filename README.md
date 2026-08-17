@@ -43,8 +43,20 @@ gokou-ruri/
 
 想连 Web GUI 一起换皮?配套仓库 **[dsh-appearance-plugins](https://github.com/MisakaZentai/dsh-appearance-plugins)** 提供与三个人格一一对应的外观插件:黑猫紫黑哥特主题、猫娘樱花粉主题、吸血鬼暗红哥特面板——零图片素材、吉祥物图自备,与本仓库可任意组合使用。
 
+## 提交前自检
+
+往本仓库提交前,先确认没有夹带私货(本机路径/令牌/账号):
+
+```powershell
+rg -n "C:[/\\]DSH|gho_|github_pat_|BEGIN.*PRIVATE|58793" .
+git diff --cached --stat
+```
+
+出现任何本机路径或令牌匹配就停手,清干净再提交。
+
 ## 说明
 
-- 预设本体从 DeepSeek Harness 自带 `cordis` 预设复制而来,只改动了 persona 行;`skills/` 内的文档源自 DeepSeek Harness 部署。
-- 角色形象与台词梗出自轻小说《我的妹妹哪有这么可爱!》(伏见司 著,电击文库),版权归原作者与版权方所有;本仓库为**同人性质,非商用**。
+- 预设本体从 DeepSeek Harness 自带 `cordis` 预设复制而来,只改动了 persona 行。本仓库**不再附带**源自 DSH 部署的 `skills/` 技能文档(避免再分发),各预设的 `skills/` 目录只留一份指路 README;官方组合编辑指南请见 [DeepSeek Harness 官方仓库](https://github.com/deepseek-ai/deepseek-harness)。
+- **非官方项目**:与 DeepSeek Harness 官方及原作版权方无任何关联;角色形象与台词梗出自轻小说《我的妹妹哪有这么可爱!》(伏见司 著,电击文库),版权归原作者与版权方所有;本仓库为**同人性质,非商用**。
+- 代码按 `LICENSE`(MIT)授权;人格文本与角色元素仅限同人非商用使用。
 - 使用前请遵守 DeepSeek Harness 与其依赖包各自的许可证。
