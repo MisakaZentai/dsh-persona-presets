@@ -1,5 +1,5 @@
 // reasoning-effort-injector — standing-composition plugin for the
-// vamp preset's flash-butler route.
+// vamp preset's flash-first route.
 //
 // Why it exists: the main session carries its own reasoning effort
 // (agent-default-model: deepseek-v4-flash-0731 @ xhigh, injected by
