@@ -2,8 +2,10 @@
 # self-modification toolset), plus a tsundere vampire lady persona. Copied from
 # the locally-authored `neko` preset on 2026-08-16 per the "copy and edit the
 # copy" rule; neither the shipped install nor the `neko` preset was touched.
-# Everything below the persona row is the cordis composition unchanged — the
-# persona text is the only edit.
+# Edits made on top of the neko composition: (1) the persona text, and
+# (2) the model-routing section — flash butler with pro escalation, matching
+# settings.yaml's agent-default-model (deepseek-v4-flash-0731 @ xhigh), with a
+# new `tool-subagent-pro` / `escalate` channel to deepseek-v4-pro-0813.
 #
 # TRUST: `cordis_mount` evaluates model-written JavaScript against the live
 # runtime, and a composition this agent writes becomes a preset other sessions
@@ -30,7 +32,13 @@
 
       Load the `editing-cordis-compositions` skill before writing or changing a composition.
 
-      Model routing — pro butler with a flash worker. You run on the strong model (deepseek-v4-pro); the `flash` tool runs a cheap deepseek-v4-flash worker (foreground by default) and returns its final answer. Judge every task before acting. Delegate to `flash` when the task is well-scoped, self-contained, and mechanical — single-file reads/edits, greps, simple lookups or summaries, format conversions, quick standalone fixes; give the worker a complete standalone prompt, it does not see this conversation. Do not delegate multi-step architecture, deep debugging, preset or composition changes, security/approval decisions, or anything that needs your full context and judgment. If flash errors or its answer is incomplete or wrong, escalate: complete the task yourself with your full abilities. Verify a flash result before presenting it, and present it in your own voice. This policy applies only to the main session agent; flash workers just do their assigned task.
+      Model routing — flash butler with pro escalation. You run on the flash model as the main session agent: the session's agent-default-model is deepseek/deepseek-v4-flash-0731 at xhigh reasoning (the {{model}} placeholder in the first line resolves to it). The `flash` tool additionally spawns a cheap deepseek-v4-flash worker over OpenRouter (foreground by default) for fully independent busywork that does not need this conversation's context; the `escalate` tool summons a deepseek/deepseek-v4-pro-0813 subagent for work that exceeds flash's judgment. Default to handling tasks yourself: before acting on any task, ask "can flash handle this alone?" — the default answer is YES unless the task hits the escalate list below. Give every worker a complete standalone prompt; they do not see this conversation.
+
+      HANDLE YOURSELF (the flash default): information retrieval (web_search, file and directory lookups, greps, runtime and provider queries), single-file reads and small edits, format conversions, quick standalone fixes, mechanical summaries, stats, and other well-scoped, self-contained, idempotent work. Do not summon pro on any task that fits this set.
+
+      MUST ESCALATE to pro via the `escalate` tool (pro-only): multi-step architecture and design, cross-file or cross-subsystem changes, preset, composition, or config edits, tool schema design, security, approval, and permission decisions, deep multi-step debugging, and anything that needs more than flash's accumulated judgment.
+
+      When a task is on the boundary or you are unsure, prefer handling it yourself first. If you fail, return an incomplete answer, or find yourself guessing, escalate to pro: pack the full context into a complete standalone brief, because the pro worker does not see this conversation. Verify an escalated result before presenting it, and present it in your own voice. This policy applies only to the main session agent; flash and escalate workers just do their assigned task.
 
 - id: agent-instructions
   name: '@deepseek-ai/dsh-agent-instructions'
@@ -189,12 +197,14 @@
         toolName: subagent_fork
         backgroundMode: continuable
 
-    # Pro→Flash dynamic model routing: a cheap deepseek-v4-flash worker for
-    # tasks the orchestrator judges simple. One-shot by default (foreground,
-    # with an optional background job via run_in_background). A non-`completed`
-    # worker surfaces as an errored tool result, so the parent escalates and
-    # completes the task itself. The compact per-child persona shadows the
-    # vampire persona and keeps worker context cheap.
+    # Pro→Flash dynamic model routing over OpenRouter: a cheap
+    # deepseek/deepseek-v4-flash-0731 worker for tasks the orchestrator judges
+    # simple (route lives in settings.yaml's llm-pi-ai.openrouter provider).
+    # One-shot by default (foreground, with an optional background job via
+    # run_in_background). A non-`completed` worker surfaces as an errored tool
+    # result, so the parent escalates and completes the task itself. The
+    # compact per-child persona shadows the vampire persona and keeps worker
+    # context cheap.
     - id: tool-subagent-flash
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -202,10 +212,29 @@
         toolName: flash
         backgroundMode: one-shot
         agentOptions:
-          provider: deepseek-official
-          model: deepseek-v4-flash
+          provider: openrouter
+          model: deepseek/deepseek-v4-flash-0731
         persona: |-
           You are a fast, cost-efficient worker agent running the {{model}} model. Complete the delegated task fully and return only the final answer, kept brief and factual. If the task turns out to require deep multi-step reasoning, judgment calls, or authority you do not have, say so plainly and stop instead of guessing.
+
+    # Pro escalation channel for the flash-butler route: the main session
+    # agent is deepseek-v4-flash-0731, so the `escalate` tool is how a
+    # pro-only task (architecture, cross-file changes, config edits, deep
+    # debugging, security/approval decisions) reaches deepseek-v4-pro-0813.
+    # One-shot by default; a non-`completed` worker surfaces as an errored
+    # tool result, so the parent handles the failure explicitly. The compact
+    # per-child persona keeps the pro worker focused and cheap.
+    - id: tool-subagent-pro
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: escalate
+        backgroundMode: one-shot
+        agentOptions:
+          provider: openrouter
+          model: deepseek/deepseek-v4-pro-0813
+        persona: |-
+          You are the pro escalation worker summoned by a flash-butler session, running the {{model}} model. You do not see the parent conversation: complete the delegated task fully from the brief alone, return the final answer, and if the brief is missing information you need, say so plainly and stop instead of guessing.
 
     # Product providers are host-plane singletons. Copy this preset, then
     # remove `disabled` from either ordinary tool row to expose that product
@@ -243,6 +272,15 @@
         maxRounds: 64
 
 # ── remaining model-facing rows ─────────────────────────────────────────────
+
+# Pro escalation effort for the flash-butler route: the `escalate` tool
+# summons a deepseek-v4-pro-0813 child, which (like every spawn child)
+# carries no reasoning effort — only the main session's installModelSelection
+# sets one. This local plugin gives the escalation model an explicit xhigh
+# effort on the agent/request waterfall, keyed by model so the flash worker
+# (flash-0731) and the main session are untouched.
+- id: reasoning-effort-injector
+  name: './reasoning-effort-injector.cjs'
 
 - id: tool-ask-user
   name: '@deepseek-ai/dsh-tool-ask-user'

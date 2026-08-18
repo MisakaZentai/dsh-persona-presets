@@ -8,7 +8,7 @@
 | [`vamp/`](./vamp) | 傲娇吸血鬼模式 | 自称「本小姐」的白毛红瞳傲娇吸血鬼大小姐 |
 | [`neko/`](./neko) | 猫娘模式 | 自称「本喵」的温柔猫娘 |
 
-所有人格都是**表现层(presentation layer)人格**:编码能力、工具、插件实验、安全约束与 DSH 自带预设完全一致,只有说话风格变了。三个人格都内置 Pro→Flash 动态模型路由(简单任务自动分派给 deepseek-v4-flash,失败自动升级回 pro)。
+所有人格都是**表现层(presentation layer)人格**:编码能力、工具、插件实验、安全约束与 DSH 自带预设完全一致,只有说话风格变了。三个人格都内置 Flash 管家→Pro 升级(flash butler with pro escalation)动态模型路由:主会话运行 OpenRouter 的 deepseek/deepseek-v4-flash-0731(xhigh 推理),杂务由 flash 使魔分担,架构/跨文件/配置/审批等任务通过 escalate 通道升级到 deepseek/deepseek-v4-pro-0813,以激进 flash 默认节省 token 与费用。
 
 ## 安装
 
@@ -31,6 +31,7 @@
 ```
 gokou-ruri/
 ├── agent.cordis.yml   # Cordis 组合:persona 行 + 全套工具行
+├── reasoning-effort-injector.cjs  # 推理强度注入(escalate 升阶通道专用)
 ├── preset.yml         # 展示元数据(名称 / 描述)
 └── skills/            # 配套技能文档(组合编辑指南等)
 ```
